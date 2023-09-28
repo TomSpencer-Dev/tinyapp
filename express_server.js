@@ -1,5 +1,6 @@
 
 const express = require('express');
+const { get } = require('request');
 const { OPEN_READWRITE } = require('sqlite3');
 const app = express();
 const PORT = 8080; // default port 8080
@@ -32,6 +33,11 @@ app.post("/urls", (req, res) => {
   let shortURLID = generateRandomString();
   urlDatabase[shortURLID] = req.body.longURL;
   res.redirect(`/urls/${shortURLID}`);
+});
+
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
