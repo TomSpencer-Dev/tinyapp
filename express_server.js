@@ -28,14 +28,15 @@ const generateRandomString = function() {
   return shortURL;
 };
 
-
-
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
   let shortURLID = generateRandomString();
   urlDatabase[shortURLID] = req.body.longURL;
-  console.log(urlDatabase);
   res.redirect(`/urls/${shortURLID}`);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id]
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
