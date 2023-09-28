@@ -24,14 +24,19 @@ const generateRandomString = function() {
   for (let i = 0; i < 6; i++) {
     shortURL += charset.charAt(Math.floor(Math.random() * charset.length));
   }
+  console.log("shortURL: " + shortURL);
   return shortURL;
 };
 
-generateRandomString();
+
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  let shortURLID = generateRandomString();
+console.log(shortURLID);
+  urlDatabase[shortURLID] = req.body.longURL;
+console.log(urlDatabase)
 });
 
 app.get("/urls", (req, res) => {
