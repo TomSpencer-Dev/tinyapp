@@ -15,6 +15,20 @@ const urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
+//Generate a Random Short URL ID
+const generateRandomString = function() {
+  let shortURL = "";
+
+  const charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (let i = 0; i < 6; i++) {
+    shortURL += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return shortURL;
+};
+
+generateRandomString();
+
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
