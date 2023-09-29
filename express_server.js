@@ -5,7 +5,7 @@ const { OPEN_READWRITE } = require('sqlite3');
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
-app.use(cookieParser())
+app.use(cookieParser());
 
 //Set ejs as the view engine
 app.set("view engine", "ejs");
@@ -92,6 +92,10 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_register", templateVars);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
