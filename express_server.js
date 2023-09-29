@@ -18,7 +18,7 @@ const urlDatabase = {
 
 //Database of users
 const users = {
-   userRandomID: {
+  userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
@@ -29,6 +29,7 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -109,6 +110,18 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = { username: req.cookies["username"] };
   res.render("urls_register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+const {email, password } = req.body;
+const id = generateRandomString();
+  const user = {
+      id,
+      email,
+      password
+    }
+  users[id] = user;
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
