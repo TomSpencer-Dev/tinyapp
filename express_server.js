@@ -120,6 +120,7 @@ const id = generateRandomString();
       email,
       password
     }
+console.log("abc");
   users[id] = user;
   res.redirect("/urls");
 });
