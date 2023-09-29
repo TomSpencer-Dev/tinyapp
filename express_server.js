@@ -42,8 +42,16 @@ const generateRandomString = function() {
   for (let i = 0; i < 6; i++) {
     shortURL += charset.charAt(Math.floor(Math.random() * charset.length));
   }
-  console.log("shortURL: " + shortURL);
   return shortURL;
+};
+
+const getUserByEmail = function(email, users) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return null;
 };
 
 app.post("/urls", (req, res) => {
@@ -64,19 +72,19 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"], };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -103,25 +111,32 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username', req.body.username);
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_register", templateVars);
 });
 
 app.post("/register", (req, res) => {
-const {email, password } = req.body;
-const id = generateRandomString();
+  const { email, password } = req.body;
+  if (email === "" || password === "") {
+    res.status(400).send(`Error 400: ${(email === '') ? "Email" : "Password"} was empty`);
+  }
+console.log(getUserByEmail(email,users))
+  if (getUserByEmail(email, users) !== null) {
+    res.status(400).send("Error 400: Email already exists as a user");
+  }
+  const id = generateRandomString();
   const user = {
-      id,
-      email,
-      password
-    }
-console.log("abc");
+    id,
+    email,
+    password
+  };
   users[id] = user;
+  res.cookie('user_id', id);
   res.redirect("/urls");
 });
 
