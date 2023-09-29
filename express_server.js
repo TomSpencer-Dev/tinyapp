@@ -83,8 +83,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  console.log(req.body.username);
   res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username', req.body.username);
   res.redirect("/urls");
 });
 
