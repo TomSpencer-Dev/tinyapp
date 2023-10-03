@@ -142,7 +142,11 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_register", templateVars);
+  if (templateVars.user !== undefined) {
+    res.redirect("/urls");
+  } else {
+    res.render("urls_register", templateVars);
+  }
 });
 
 app.post("/register", (req, res) => {
