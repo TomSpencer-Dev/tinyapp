@@ -63,9 +63,15 @@ const verifyPassword = function(email, password, users) {
 };
 
 app.post("/urls", (req, res) => {
-  let shortURLID = generateRandomString();
-  urlDatabase[shortURLID] = req.body.longURL;
-  res.redirect(`/urls/${shortURLID}`);
+  const user = users[req.cookies["user_id"]];
+  if (user === undefined) {
+    console.log("nothing added");
+    res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
+  } else {
+    let shortURLID = generateRandomString();
+    urlDatabase[shortURLID] = req.body.longURL;
+    res.redirect(`/urls/${shortURLID}`);
+  }
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -102,7 +108,12 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  console.log(longURL);
+  if (longURL === undefined) {
+    res.send("<html><body><h2>That short URL id does not exist</h2></body></html>\n");
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 app.get("/", (req, res) => {
