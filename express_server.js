@@ -53,6 +53,14 @@ const getUserByEmail = function(email, users) {
   }
   return null;
 };
+const verifyPassword = function(email, password, users) {
+  for (let user in users) {
+    if (users[user].email === email && users[user].password === password) {
+      return users[user];
+    }
+  }
+  return null;
+};
 
 app.post("/urls", (req, res) => {
   let shortURLID = generateRandomString();
@@ -106,9 +114,26 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
+  const { email, password } = req.body;
+  // If a user with that e-mail cannot be found, return a response with a 403 status code.
+  if (getUserByEmail(email, users) === null) {
+    res.status(403).send("Error 403: Email cannot be found");
+  }
+  else if (verifyPassword(email, password, users) === null) {
+    res.status(403).send("Error 403: Password does not match");
+  } else {
+    const id = generateRandomString();
+    const user = {
+      id,
+      email,
+      password
+    };
+    users[id] = user;
+    res.cookie('user_id', id);
+    res.redirect("/urls");
+  }
 });
+
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
@@ -125,7 +150,6 @@ app.post("/register", (req, res) => {
   if (email === "" || password === "") {
     res.status(400).send(`Error 400: ${(email === '') ? "Email" : "Password"} was empty`);
   }
-console.log(getUserByEmail(email,users))
   if (getUserByEmail(email, users) !== null) {
     res.status(400).send("Error 400: Email already exists as a user");
   }
@@ -142,7 +166,7 @@ console.log(getUserByEmail(email,users))
 
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_register", templateVars);
+  res.render("urls_login", templateVars);
 });
 
 app.listen(PORT, () => {
