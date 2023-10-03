@@ -166,7 +166,11 @@ app.post("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_login", templateVars);
+  if (templateVars.user !== undefined) {
+    res.redirect("/urls");
+  } else {
+    res.render("urls_login", templateVars);
+  }
 });
 
 app.listen(PORT, () => {
