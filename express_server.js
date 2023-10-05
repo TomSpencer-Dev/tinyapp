@@ -14,11 +14,11 @@ app.set("view engine", "ejs");
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
+    userID: "userRandomID",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userID: "userRandomID",
   },
 };
 
@@ -75,7 +75,7 @@ app.post("/urls", (req, res) => {
     res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
   } else {
     let shortURLID = generateRandomString();
-    urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id};
+    urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id };
     res.redirect("/urls");
   }
 });
@@ -91,12 +91,27 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  const urlsForUser = function(id) {
+    tempDB = {};
+    for (let dbID in urlDatabase) {
+      if (urlDatabase[dbID].userID === id) {
+        tempDB[dbID] = urlDatabase[dbID];
+      }
+
+    }
+    return tempDB;
+  };
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase
+    urls: urlsForUser(req.cookies["user_id"])
   };
-  res.render("urls_index", templateVars);
+  if (templateVars.user === undefined) {
+    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+  } else {
+    res.render("urls_index", templateVars);
+  }
 });
+
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
@@ -108,8 +123,14 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
-  res.render("urls_show", templateVars);
+  if (req.cookies["user_id"] === undefined) {
+    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+  } else if (req.cookies["user_id"] !== req.params.id) {
+    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+  } else {
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:id", (req, res) => {
@@ -143,7 +164,7 @@ app.post("/login", (req, res) => {
   else if (verifyPassword(email, password, users) === null) {
     res.status(403).send("Error 403: Password does not match");
   } else {
-    const id = generateRandomString();
+    const id = getUserByEmail(email, users).id;
     const user = {
       id,
       email,
