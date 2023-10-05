@@ -1,12 +1,16 @@
-
+const cookieSession = require('cookie-session')
 const express = require('express');
 const { get } = require('request');
 const { OPEN_READWRITE } = require('sqlite3');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["anything", "something"]
+}))
 
 //Set ejs as the view engine
 app.set("view engine", "ejs");
@@ -52,10 +56,10 @@ const generateRandomString = function() {
   return shortURL;
 };
 
-const getUserByEmail = function(email, users) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
+const getUserByEmail = function(email, database) {
+  for (let user in database) {
+    if (database[user].email === email) {
+      return database[user];
     }
   }
   return null;
@@ -63,7 +67,7 @@ const getUserByEmail = function(email, users) {
 
 
 app.post("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = users[req.session.user_id];
   if (user === undefined) {
     res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
   } else {
@@ -77,9 +81,9 @@ app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
   }
-  if (req.cookies["user_id"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
-  } else if (req.cookies["user_id"] !== req.params.id) {
+  } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   }
   urlDatabase[req.params.id].longURL = req.body.longURL;
@@ -90,9 +94,9 @@ app.post("/urls/:id/delete", (req, res) => {
 if (!urlDatabase[req.params.id]) {
     res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
   }
-  if (req.cookies["user_id"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
-  } else if (req.cookies["user_id"] !== req.params.id) {
+  } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   }
   delete urlDatabase[req.params.id];
@@ -111,8 +115,8 @@ app.get("/urls", (req, res) => {
     return tempDB;
   };
   const templateVars = {
-    user: users[req.cookies["user_id"]],
-    urls: urlsForUser(req.cookies["user_id"])
+    user: users[req.session.user_id],
+    urls: urlsForUser(req.session.user_id)
   };
   if (templateVars.user === undefined) {
     res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
@@ -123,7 +127,7 @@ app.get("/urls", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user === undefined) {
     res.redirect("/login");
   } else {
@@ -132,19 +136,21 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if (req.cookies["user_id"] === undefined) {
+  if (!urlDatabase[req.params.id]) {
+    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+  }
+  if (req.session.user_id === undefined) {
     res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
-  } else if (req.cookies["user_id"] !== req.params.id) {
+  } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   } else {
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.session.user_id] };
     res.render("urls_show", templateVars);
   }
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log(longURL);
   if (longURL === undefined) {
     res.send("<html><body><h2>That short URL id does not exist</h2></body></html>\n");
   } else {
@@ -165,7 +171,6 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-console.log(bcrypt.hashSync("1234", 10));
   const { email, password } = req.body;
   const userInfo =  getUserByEmail(email, users) 
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
@@ -175,19 +180,21 @@ console.log(bcrypt.hashSync("1234", 10));
   else if (!bcrypt.compareSync(password, userInfo.password)) {
     res.status(403).send("Error 403: Password does not match");
   } else {
-    res.cookie('user_id', userInfo.id);
+    req.session.user_id = userInfo.id;
+    // res.cookie('user_id', userInfo.id);
     res.redirect("/urls");
   }
 });
 
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
+  // res.clearCookie('user_id');
   res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user !== undefined) {
     res.redirect("/urls");
   } else {
@@ -210,12 +217,13 @@ app.post("/register", (req, res) => {
     password : bcrypt.hashSync(password, 10)
   };
   users[id] = user;
-  res.cookie('user_id', id);
+  req.session.user_id = id;
+  // res.cookie('user_id', id);
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user !== undefined) {
     res.redirect("/urls");
   } else {
