@@ -56,14 +56,7 @@ const generateRandomString = function() {
   return shortURL;
 };
 
-const getUserByEmail = function(email, database) {
-  for (let user in database) {
-    if (database[user].email === email) {
-      return database[user];
-    }
-  }
-  return null;
-};
+
 
 
 app.post("/urls", (req, res) => {
