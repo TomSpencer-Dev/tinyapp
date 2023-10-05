@@ -5,6 +5,7 @@ const { OPEN_READWRITE } = require('sqlite3');
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require("bcryptjs");
 app.use(cookieParser());
 
 //Set ejs as the view engine
@@ -27,12 +28,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "1234",
+    password: "$2a$10$punr8lynWBJSpBDWeDMFPe776jSzkC/ywLaoWo4fU0YBBDOY2cuvC",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "5678",
+    password: "$2a$10$punr8lynWBJSpBDWeDMFPe776jSzkC/ywLaoWo4fU0YBBDOY2cuvC",
   },
 };
 
@@ -59,14 +60,7 @@ const getUserByEmail = function(email, users) {
   }
   return null;
 };
-const verifyPassword = function(email, password, users) {
-  for (let user in users) {
-    if (users[user].email === email && users[user].password === password) {
-      return users[user];
-    }
-  }
-  return null;
-};
+
 
 app.post("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]];
@@ -171,22 +165,17 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+console.log(bcrypt.hashSync("1234", 10));
   const { email, password } = req.body;
+  const userInfo =  getUserByEmail(email, users) 
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
-  if (getUserByEmail(email, users) === null) {
+  if (userInfo === null) {
     res.status(403).send("Error 403: Email cannot be found");
   }
-  else if (verifyPassword(email, password, users) === null) {
+  else if (!bcrypt.compareSync(password, userInfo.password)) {
     res.status(403).send("Error 403: Password does not match");
   } else {
-    const id = getUserByEmail(email, users).id;
-    const user = {
-      id,
-      email,
-      password
-    };
-    users[id] = user;
-    res.cookie('user_id', id);
+    res.cookie('user_id', userInfo.id);
     res.redirect("/urls");
   }
 });
@@ -218,7 +207,7 @@ app.post("/register", (req, res) => {
   const user = {
     id,
     email,
-    password
+    password : bcrypt.hashSync(password, 10)
   };
   users[id] = user;
   res.cookie('user_id', id);
