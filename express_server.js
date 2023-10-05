@@ -71,7 +71,6 @@ const verifyPassword = function(email, password, users) {
 app.post("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]];
   if (user === undefined) {
-    console.log("nothing added");
     res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
   } else {
     let shortURLID = generateRandomString();
@@ -81,11 +80,27 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
+  if (!urlDatabase[req.params.id]) {
+    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+  }
+  if (req.cookies["user_id"] === undefined) {
+    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+  } else if (req.cookies["user_id"] !== req.params.id) {
+    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+  }
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+if (!urlDatabase[req.params.id]) {
+    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+  }
+  if (req.cookies["user_id"] === undefined) {
+    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+  } else if (req.cookies["user_id"] !== req.params.id) {
+    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+  }
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
