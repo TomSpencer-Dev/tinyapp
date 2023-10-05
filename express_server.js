@@ -168,7 +168,7 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const userInfo =  getUserByEmail(email, users) 
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
-  if (userInfo === null) {
+  if (userInfo === undefined) {
     res.status(403).send("Error 403: Email cannot be found");
   }
   else if (!bcrypt.compareSync(password, userInfo.password)) {
@@ -201,7 +201,7 @@ app.post("/register", (req, res) => {
   if (email === "" || password === "") {
     res.status(400).send(`Error 400: ${(email === '') ? "Email" : "Password"} was empty`);
   }
-  if (getUserByEmail(email, users) !== null) {
+  if (getUserByEmail(email, users) !== undefined) {
     res.status(400).send("Error 400: Email already exists as a user");
   }
   const id = generateRandomString();
