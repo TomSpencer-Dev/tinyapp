@@ -1,6 +1,6 @@
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const express = require('express');
-const { getUserByEmail } = require('./helper.js')
+const { getUserByEmail } = require('./helper.js');
 const { get } = require('request');
 const { OPEN_READWRITE } = require('sqlite3');
 // const cookieParser = require('cookie-parser');
@@ -11,7 +11,7 @@ const bcrypt = require("bcryptjs");
 app.use(cookieSession({
   name: 'session',
   keys: ["anything", "something"]
-}))
+}));
 
 //Set ejs as the view engine
 app.set("view engine", "ejs");
@@ -63,7 +63,7 @@ const generateRandomString = function() {
 app.post("/urls", (req, res) => {
   const user = users[req.session.user_id];
   if (user === undefined) {
-    res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
   } else {
     let shortURLID = generateRandomString();
     urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id };
@@ -73,25 +73,25 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
   }
   if (req.session.user_id === undefined) {
-    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   }
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-if (!urlDatabase[req.params.id]) {
-    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
   }
   if (req.session.user_id === undefined) {
-    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   }
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
@@ -113,7 +113,7 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(req.session.user_id)
   };
   if (templateVars.user === undefined) {
-    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
   } else {
     res.render("urls_index", templateVars);
   }
@@ -131,12 +131,12 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    res.send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
   }
   if (req.session.user_id === undefined) {
-    res.send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
   } else {
     const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.session.user_id] };
     res.render("urls_show", templateVars);
@@ -146,14 +146,18 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   if (longURL === undefined) {
-    res.send("<html><body><h2>That short URL id does not exist</h2></body></html>\n");
+    res.status(404).send("<html><body><h2>That short URL id does not exist</h2></body></html>\n");
   } else {
     res.redirect(longURL);
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -166,7 +170,7 @@ app.get("/hello", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const userInfo =  getUserByEmail(email, users) 
+  const userInfo = getUserByEmail(email, users);
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
   if (userInfo === undefined) {
     res.status(403).send("Error 403: Email cannot be found");
@@ -175,7 +179,6 @@ app.post("/login", (req, res) => {
     res.status(403).send("Error 403: Password does not match");
   } else {
     req.session.user_id = userInfo.id;
-    // res.cookie('user_id', userInfo.id);
     res.redirect("/urls");
   }
 });
@@ -183,7 +186,6 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  // res.clearCookie('user_id');
   res.redirect("/login");
 });
 
@@ -208,7 +210,7 @@ app.post("/register", (req, res) => {
   const user = {
     id,
     email,
-    password : bcrypt.hashSync(password, 10)
+    password: bcrypt.hashSync(password, 10)
   };
   users[id] = user;
   req.session.user_id = id;
