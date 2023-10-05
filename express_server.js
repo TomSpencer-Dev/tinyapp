@@ -12,8 +12,14 @@ app.set("view engine", "ejs");
 
 //Database of URLs
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 //Database of users
@@ -21,12 +27,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "1234",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "5678",
   },
 };
 
@@ -69,13 +75,13 @@ app.post("/urls", (req, res) => {
     res.send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
   } else {
     let shortURLID = generateRandomString();
-    urlDatabase[shortURLID] = req.body.longURL;
-    res.redirect(`/urls/${shortURLID}`);
+    urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id};
+    res.redirect("/urls");
   }
 });
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
@@ -102,7 +108,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies["user_id"]] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
