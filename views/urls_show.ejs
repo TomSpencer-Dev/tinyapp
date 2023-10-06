@@ -1,3 +1,4 @@
+<!-- View to edit the Long URL associated with a short URL ID -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,6 +10,7 @@
 </head>
 
 <body>
+  <!-- Display Header -->
   <%- include('partials/_header') %>
     <div class="card text-center">
       <div class="card-header"></div>
@@ -16,6 +18,7 @@
         <h5 class="card-title">TinyURL for: <%= longURL %>
         </h5>
         <p class="card-text">
+          <!-- Displays Short URL ID and links to long URL -->
           Short URL ID: <a href="/u/<%= id %>">
             <%= id %>
           </a>
@@ -23,6 +26,7 @@
       </div>
       <div class="card-footer text-muted">
         <h5 >Edit</h5>
+        <!-- Form with POST urls/:id endpoint to update long URL -->
         <form class="form-inline justify-content-center" action="/urls/<%= id %>" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">New URL:</label>
