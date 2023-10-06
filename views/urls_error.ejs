@@ -1,3 +1,4 @@
+<!-- View to display error codes-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,15 +10,17 @@
 </head>
 
 <body>
+  <!--Displays header-->
   <%- include('partials/_header') %>
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
+        <!-- Displays error code rendered from express_server.js templateVars -->
         <h5 class="card-title"><%= errorCode %></h5>
       </div>
       <div class="card-footer text-muted">
+        <!-- Displays message rendered from express_server.js templateVars -->
         <p ><%= message %></p>
-      
         </div>
       </form>
       </div>
