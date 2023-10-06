@@ -6,6 +6,7 @@ const { assert } = require('chai');
 //Import getUserByEmail function from helper.js
 const { getUserByEmail } = require('../helper.js');
 
+//Create database of users
 const testUsers = {
   "userRandomID": {
     id: "userRandomID", 
@@ -19,6 +20,7 @@ const testUsers = {
   }
 };
 
+//Describe block to test getUserByEmail function
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
     const user = getUserByEmail("user@example.com", testUsers)
