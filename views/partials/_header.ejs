@@ -1,3 +1,4 @@
+<!-- Header/navbar template to place at the top of views -->
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
@@ -11,6 +12,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!-- If user is logged in, displays logout button -->
     <% if(user !==undefined){ %>
       <form class="form-inline justify-content-right" action="/logout" method="POST">
         <div class="form-group mb-2">
@@ -19,6 +21,7 @@
             <button type="submit" class="btn btn-outline-dark">Logout</button>
         </div>
       </form>
+    <!-- If user is not logged in, displays links to the register and login views -->
       <% } else{ %>
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/register">Register</a>
