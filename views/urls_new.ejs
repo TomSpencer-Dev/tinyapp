@@ -1,3 +1,4 @@
+<!-- View to create a new Short URL ID and Long URL pair -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -19,13 +20,15 @@
   </head>
 
   <body>
+    <!-- Displays Header -->
     <%- include('partials/_header') %>
-
     <main style="margin: 1em;">
       <h3>Create TinyURL</h3>
+      <!-- Form with POST /urls endpoint -->
       <form class="form-inline" action="/urls" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Enter a URL:</label>
+          <!-- Long URL input -->
           <input
             class="form-control"
             type="text"
