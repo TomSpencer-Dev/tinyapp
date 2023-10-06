@@ -1,5 +1,9 @@
+//File to test helper function with chai
+
+//Import Chai
 const { assert } = require('chai');
 
+//Import getUserByEmail function from helper.js
 const { getUserByEmail } = require('../helper.js');
 
 const testUsers = {

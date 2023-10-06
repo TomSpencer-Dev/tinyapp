@@ -57,28 +57,29 @@ const generateRandomString = function() {
   return shortURL;
 };
 
-
-
-
 app.post("/urls", (req, res) => {
   const user = users[req.session.user_id];
   if (user === undefined) {
-    res.status(401).send("<html><body><h2>You cannot shorten URL's because you are not logged in</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "You cannot shorten URL's because you are not logged in", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else {
     let shortURLID = generateRandomString();
     urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id };
-    res.redirect("/urls");
+    res.redirect("/urls/" + shortURLID);
   }
 });
 
 app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
+    res.status(404).render("urls_error", templateVars);
   }
   if (req.session.user_id === undefined) {
-    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   }
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
@@ -86,15 +87,18 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
-  }
-  if (req.session.user_id === undefined) {
-    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
+    res.status(404).render("urls_error", templateVars);
+  } else if (req.session.user_id === undefined) {
+    const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
+  } else {
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
   }
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
@@ -113,7 +117,8 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(req.session.user_id)
   };
   if (templateVars.user === undefined) {
-    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else {
     res.render("urls_index", templateVars);
   }
@@ -131,12 +136,15 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    res.status(404).send("<html><body><h2>Short url does not exist</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
+    res.status(404).render("urls_error", templateVars);
   }
   if (req.session.user_id === undefined) {
-    res.status(401).send("<html><body><h2>Login or register to access urls</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.status(401).send("<html><body><h2>This urls does not belong to you</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
+    res.status(401).render("urls_error", templateVars);
   } else {
     const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.session.user_id] };
     res.render("urls_show", templateVars);
@@ -144,9 +152,10 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if (longURL === undefined) {
-    res.status(404).send("<html><body><h2>That short URL id does not exist</h2></body></html>\n");
+    const templateVars = { user: users[req.session.user_id], message: "That short URL id does not exist", errorCode: "404" };
+    res.status(404).render("urls_error", templateVars);
   } else {
     res.redirect(longURL);
   }
@@ -173,10 +182,12 @@ app.post("/login", (req, res) => {
   const userInfo = getUserByEmail(email, users);
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
   if (userInfo === undefined) {
-    res.status(403).send("Error 403: Email cannot be found");
+    const templateVars = { user: users[req.session.user_id], message: "Email not found", errorCode: "403" };
+    res.status(403).render("urls_error", templateVars);
   }
   else if (!bcrypt.compareSync(password, userInfo.password)) {
-    res.status(403).send("Error 403: Password does not match");
+    const templateVars = { user: users[req.session.user_id], message: "Password does not match", errorCode: "403" };
+    res.status(403).render("urls_error", templateVars);
   } else {
     req.session.user_id = userInfo.id;
     res.redirect("/urls");
@@ -201,21 +212,22 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (email === "" || password === "") {
-    res.status(400).send(`Error 400: ${(email === '') ? "Email" : "Password"} was empty`);
+    const templateVars = { user: users[req.session.user_id], message: `Error 400: ${(email === '') ? 'Email' : 'Password'} was empty`, errorCode: "400" };
+    res.status(400).render("urls_error", templateVars);
+  } else if (getUserByEmail(email, users) !== undefined) {
+    const templateVars = { user: users[req.session.user_id], message: "Email already exists as a user", errorCode: "400" };
+    res.status(400).render("urls_error", templateVars);
+  } else {
+    const id = generateRandomString();
+    const user = {
+      id,
+      email,
+      password: bcrypt.hashSync(password, 10)
+    };
+    users[id] = user;
+    req.session.user_id = id;
+    res.redirect("/urls");
   }
-  if (getUserByEmail(email, users) !== undefined) {
-    res.status(400).send("Error 400: Email already exists as a user");
-  }
-  const id = generateRandomString();
-  const user = {
-    id,
-    email,
-    password: bcrypt.hashSync(password, 10)
-  };
-  users[id] = user;
-  req.session.user_id = id;
-  // res.cookie('user_id', id);
-  res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
