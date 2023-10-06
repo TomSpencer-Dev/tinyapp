@@ -4,10 +4,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-<<<<<<< HEAD
-!["Login Screen"](https://github.com/TomSpencer-Dev/tinyapp/blob/main/images/tinyAppLoginScreen.png)
-!["screenshot description"](#)
-=======
 ### Login Screen
 !["Login Screen"](https://github.com/TomSpencer-Dev/tinyapp/blob/main/images/tinyAppLoginScreen.png)
 
@@ -22,7 +18,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ### urls_error view
 !["Error Screen"](https://github.com/TomSpencer-Dev/tinyapp/blob/main/images/errorScreen.png)
->>>>>>> b156673750f1e0e7e27aaed4994e8a263924716a
 
 ## Dependencies
 
