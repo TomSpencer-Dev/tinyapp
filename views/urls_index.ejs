@@ -1,3 +1,4 @@
+<!-- View to display a users Short URL IDs with associated Long URLs -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,6 +13,7 @@
 </head>
 
 <body>
+  <!-- Displays header -->
   <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
@@ -25,19 +27,24 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Loops through urls renderd from endpoint in expres_server.js -->
           <% for (let id in urls) { %>
             <tr>
               <td>
+                <!-- Displays short URL ID -->
                 <%= id %>
               </td>
               <td>
+                <!-- Displays long URL -->
                 <%= urls[id].longURL %>
               </td>
+              <!-- Get method that will send user to urls_show view to edit the long URL associted with the short URL ID -->
               <td>
                 <form method="GET" action="/urls/<%= id %>">
                   <button type="submit" class="btn btn-outline-primary">Edit</button>
                 </form>
               </td>
+              <!-- Post method that delete the short URL ID and any data linked to it -->
               <td>
                 <form method="POST" action="/urls/<%= id %>/delete">
                   <button type="submit" class="btn btn-outline-danger">Delete</button>
