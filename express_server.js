@@ -1,13 +1,15 @@
-const cookieSession = require('cookie-session');
-const express = require('express');
-const { getUserByEmail } = require('./helper.js');
-const { get } = require('request');
+//Server file to handle Get and Post endpoints
+
+
+const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
+const express = require('express');                //Load express
+const { getUserByEmail } = require('./helper.js'); //Load getUserByEmail function
+const { get } = require('request');                //Load request
 const { OPEN_READWRITE } = require('sqlite3');
-// const cookieParser = require('cookie-parser');
-const app = express();
-const PORT = 8080; // default port 8080
-const bcrypt = require("bcryptjs");
-// app.use(cookieParser());
+const app = express();                             //Create app variable that utilizes the express function
+const PORT = 8080;                                 // default port 8080
+const bcrypt = require("bcryptjs");                //Load bcrypt to 
+
 app.use(cookieSession({
   name: 'session',
   keys: ["anything", "something"]
@@ -57,6 +59,8 @@ const generateRandomString = function() {
   return shortURL;
 };
 
+
+//POST /urls endpoint - Generates new short URL ID - Displays short URL ID and user inputted long URL
 app.post("/urls", (req, res) => {
   const user = users[req.session.user_id];
   if (user === undefined) {
@@ -69,22 +73,24 @@ app.post("/urls", (req, res) => {
   }
 });
 
+//POST /urls/:id endpoint - :id is a dynamic value - 
 app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
     res.status(404).render("urls_error", templateVars);
-  }
-  if (req.session.user_id === undefined) {
+  } else if (req.session.user_id === undefined) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
+  } else {
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    res.redirect("/urls");
   }
-  urlDatabase[req.params.id].longURL = req.body.longURL;
-  res.redirect("/urls");
 });
 
+//POST /urls/:id/delete endpoint - deletes short URL ID that is equal to :id(dynamic value)
 app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
@@ -101,6 +107,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
+//GET /urls endpoint - renders urls_index if logged in
 app.get("/urls", (req, res) => {
   const urlsForUser = function(id) {
     tempDB = {};
@@ -124,7 +131,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-
+//GET /urls/new endpoint - renders urls_new if logged in and the short URL ID belongs to the user
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user === undefined) {
@@ -134,6 +141,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+//GET /urls/:id endpoint - renders urls_show if logged in and the short URL ID belongs to the user
 app.get("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
@@ -151,6 +159,7 @@ app.get("/urls/:id", (req, res) => {
   }
 });
 
+//GET /u/:id endpoint - redirects to the longURL associated with short URL ID
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if (longURL === undefined) {
@@ -161,6 +170,7 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
+//GET / endpoint - redirects to /urls if logged in - redirects to /login if not logged in
 app.get("/", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
@@ -169,14 +179,17 @@ app.get("/", (req, res) => {
   }
 });
 
+//GET /urls.json endpoint that parses JSON and resolves to a JavaScript object
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//GET /hello endpoint that sends an htmal message Hello World
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//POST /login endpoint - logs in user if email and password exist in the users database
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const userInfo = getUserByEmail(email, users);
@@ -194,12 +207,14 @@ app.post("/login", (req, res) => {
   }
 });
 
-
+//POST /logout endpoint - logs user out by deleting userID cookie/session
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
 });
 
+
+//GET /register endpoint - renders urls_registser view with form to register a new user
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user !== undefined) {
@@ -209,6 +224,7 @@ app.get("/register", (req, res) => {
   }
 });
 
+//POST /register endpoint - if Email doesn't exist in users database and password is entered, creates a new user in the users database
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (email === "" || password === "") {
@@ -230,6 +246,7 @@ app.post("/register", (req, res) => {
   }
 });
 
+//GET /login endpoint which renders urls_login view
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user !== undefined) {
@@ -239,6 +256,7 @@ app.get("/login", (req, res) => {
   }
 });
 
+//Sends message when app is listening on default port
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
