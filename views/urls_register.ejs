@@ -1,3 +1,4 @@
+<!-- View to display user registration form -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,7 +13,9 @@
 </head>
 
 <body>
+  <!-- Displays header -->
   <%- include('partials/_header') %>
+  <!-- Form with POST /register endpoint, email input field, and password input field -->
   <form action="/register" method="POST">
   <div class="form-group">
     <label for="exampleInputEmail1">Email address</label>
