@@ -1,6 +1,5 @@
 //Server file to handle Get and Post endpoints
 
-
 const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
 const express = require('express');                //Load express
 const { getUserByEmail } = require('./helper.js'); //Load getUserByEmail function
@@ -8,7 +7,7 @@ const { get } = require('request');                //Load request
 const { OPEN_READWRITE } = require('sqlite3');
 const app = express();                             //Create app variable that utilizes the express function
 const PORT = 8080;                                 // default port 8080
-const bcrypt = require("bcryptjs");                //Load bcrypt to 
+const bcrypt = require("bcryptjs");                //Load bcrypt to
 
 app.use(cookieSession({
   name: 'session',
@@ -73,7 +72,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
-//POST /urls/:id endpoint - :id is a dynamic value - 
+//POST /urls/:id endpoint - :id is a dynamic value -
 app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
@@ -110,7 +109,7 @@ app.post("/urls/:id/delete", (req, res) => {
 //GET /urls endpoint - renders urls_index if logged in
 app.get("/urls", (req, res) => {
   const urlsForUser = function(id) {
-    tempDB = {};
+    let tempDB = {};
     for (let dbID in urlDatabase) {
       if (urlDatabase[dbID].userID === id) {
         tempDB[dbID] = urlDatabase[dbID];
@@ -197,8 +196,7 @@ app.post("/login", (req, res) => {
   if (userInfo === undefined) {
     const templateVars = { user: users[req.session.user_id], message: "Email not found", errorCode: "403" };
     res.status(403).render("urls_error", templateVars);
-  }
-  else if (!bcrypt.compareSync(password, userInfo.password)) {
+  } else if (!bcrypt.compareSync(password, userInfo.password)) {
     const templateVars = { user: users[req.session.user_id], message: "Password does not match", errorCode: "403" };
     res.status(403).render("urls_error", templateVars);
   } else {
