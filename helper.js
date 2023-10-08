@@ -1,6 +1,6 @@
 //Module to contain helper functions
 
-const { users, urlDatabase  } = require('./database.js'); //Load urlDatabase and users databases
+const { urlDatabase } = require('./database.js'); //Load urlDatabase
 
 
 //Function to check if user's email exists in the users database
@@ -15,15 +15,15 @@ const getUserByEmail = function(email, database) {
 
 //urlsForUser function to create a temporary database of URLS owned by the current user
 const urlsForUser = function(id) {
-    let tempDB = {};
-    for (let dbID in urlDatabase) {
-      if (urlDatabase[dbID].userID === id) {
-        tempDB[dbID] = urlDatabase[dbID];
-      }
-
+  let tempDB = {};
+  for (let dbID in urlDatabase) {
+    if (urlDatabase[dbID].userID === id) {
+      tempDB[dbID] = urlDatabase[dbID];
     }
-    return tempDB;
-  };
+
+  }
+  return tempDB;
+};
 
 //Generate a Random Short URL ID
 const generateRandomString = function() {
@@ -38,4 +38,4 @@ const generateRandomString = function() {
 };
 
 //Export function
-module.exports = {getUserByEmail, urlsForUser, generateRandomString};
+module.exports = { getUserByEmail, urlsForUser, generateRandomString };
