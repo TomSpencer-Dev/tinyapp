@@ -24,6 +24,9 @@ app.post("/urls", (req, res) => {
   if (!user) {
     const templateVars = { user: users[req.session.user_id], message: "You cannot shorten URL's because you are not logged in", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
+  } else if (!longURL) {
+    const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
+    res.status(400).render("urls_error", templateVars);
   } else {
     let shortURLID = generateRandomString();
     urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id };
@@ -36,12 +39,15 @@ app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
     res.status(404).render("urls_error", templateVars);
-  } else if (req.session.user_id === undefined) {
+  } else if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
+  } else if (!longURL) {
+    const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
+    res.status(400).render("urls_error", templateVars);
   } else {
     urlDatabase[req.params.id].longURL = req.body.longURL;
     res.redirect("/urls");
@@ -53,7 +59,7 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
     res.status(404).render("urls_error", templateVars);
-  } else if (req.session.user_id === undefined) {
+  } else if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
@@ -72,7 +78,7 @@ app.get("/urls", (req, res) => {
     user: users[req.session.user_id],
     urls: urlsForUser(req.session.user_id)
   };
-  if (templateVars.user === undefined) {
+  if (!templateVars.user) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else {
@@ -83,7 +89,7 @@ app.get("/urls", (req, res) => {
 //GET /urls/new endpoint - renders urls_new if logged in and the short URL ID belongs to the user
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
-  if (templateVars.user === undefined) {
+  if (!templateVars.user) {
     res.redirect("/login");
   } else {
     res.render("urls_new", templateVars);
@@ -96,7 +102,7 @@ app.get("/urls/:id", (req, res) => {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
     res.status(404).render("urls_error", templateVars);
   }
-  if (req.session.user_id === undefined) {
+  if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
@@ -111,7 +117,7 @@ app.get("/urls/:id", (req, res) => {
 //GET /u/:id endpoint - redirects to the longURL associated with short URL ID
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
-  if (longURL === undefined) {
+  if (!longURL) {
     const templateVars = { user: users[req.session.user_id], message: "That short URL id does not exist", errorCode: "404" };
     res.status(404).render("urls_error", templateVars);
   } else {
@@ -133,17 +139,13 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//GET /hello endpoint that sends an htmal message Hello World
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 //POST /login endpoint - logs in user if email and password exist in the users database
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const userInfo = getUserByEmail(email, users);
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
-  if (userInfo === undefined) {
+  if (!userInfo) {
     const templateVars = { user: users[req.session.user_id], message: "Email not found", errorCode: "403" };
     res.status(403).render("urls_error", templateVars);
   } else if (!bcrypt.compareSync(password, userInfo.password)) {
@@ -165,7 +167,7 @@ app.post("/logout", (req, res) => {
 //GET /register endpoint - renders urls_registser view with form to register a new user
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
-  if (templateVars.user !== undefined) {
+  if (templateVars.user) {
     res.redirect("/urls");
   } else {
     res.render("urls_register", templateVars);
@@ -176,9 +178,9 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    const templateVars = { user: users[req.session.user_id], message: `Error 400: ${(email === '') ? 'Email' : 'Password'} was empty`, errorCode: "400" };
+    const templateVars = { user: users[req.session.user_id], message: `Error 400: ${(!email) ? 'Email' : 'Password'} was empty`, errorCode: "400" };
     res.status(400).render("urls_error", templateVars);
-  } else if (getUserByEmail(email, users) !== undefined) {
+  } else if (getUserByEmail(email, users)) {
     const templateVars = { user: users[req.session.user_id], message: "Email already exists as a user", errorCode: "400" };
     res.status(400).render("urls_error", templateVars);
   } else {
@@ -197,7 +199,7 @@ app.post("/register", (req, res) => {
 //GET /login endpoint which renders urls_login view
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
-  if (templateVars.user !== undefined) {
+  if (templateVars.user) {
     res.redirect("/urls");
   } else {
     res.render("urls_login", templateVars);
