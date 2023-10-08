@@ -3,6 +3,7 @@
 const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
 const express = require('express');                //Load express
 const { getUserByEmail, urlsForUser, generateRandomString } = require('./helper.js'); //Load getUserByEmail, urlsForUser, and generateRandomString functions
+const { urlDatabase, users  } = require('./database.js'); //Load urlDatabase and users databases
 const app = express();                             //Create app variable that utilizes the express function
 const PORT = 8080;                                 // default port 8080
 const bcrypt = require("bcryptjs");                //Load bcrypt to
@@ -14,32 +15,6 @@ app.use(cookieSession({
 
 //Set ejs as the view engine
 app.set("view engine", "ejs");
-
-//Database of URLs
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "userRandomID",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "userRandomID",
-  },
-};
-
-//Database of users
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "$2a$10$punr8lynWBJSpBDWeDMFPe776jSzkC/ywLaoWo4fU0YBBDOY2cuvC",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "$2a$10$punr8lynWBJSpBDWeDMFPe776jSzkC/ywLaoWo4fU0YBBDOY2cuvC",
-  },
-};
 
 app.use(express.urlencoded({ extended: true }));
 
