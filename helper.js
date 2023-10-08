@@ -10,5 +10,17 @@ const getUserByEmail = function(email, database) {
   return undefined;
 };
 
+//urlsForUser function to create a temporary database of URLS owned by the current user
+const urlsForUser = function(id) {
+    let tempDB = {};
+    for (let dbID in urlDatabase) {
+      if (urlDatabase[dbID].userID === id) {
+        tempDB[dbID] = urlDatabase[dbID];
+      }
+
+    }
+    return tempDB;
+  };
+
 //Export function
-module.exports = {getUserByEmail};
+module.exports = {getUserByEmail, urlsForUser};

@@ -2,7 +2,7 @@
 
 const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
 const express = require('express');                //Load express
-const { getUserByEmail } = require('./helper.js'); //Load getUserByEmail function
+const { getUserByEmail, urlsForUser } = require('./helper.js'); //Load getUserByEmail function
 const app = express();                             //Create app variable that utilizes the express function
 const PORT = 8080;                                 // default port 8080
 const bcrypt = require("bcryptjs");                //Load bcrypt to
@@ -106,16 +106,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //GET /urls endpoint - renders urls_index if logged in
 app.get("/urls", (req, res) => {
-  const urlsForUser = function(id) {
-    let tempDB = {};
-    for (let dbID in urlDatabase) {
-      if (urlDatabase[dbID].userID === id) {
-        tempDB[dbID] = urlDatabase[dbID];
-      }
-
-    }
-    return tempDB;
-  };
+  urlsForUser(ids);
   const templateVars = {
     user: users[req.session.user_id],
     urls: urlsForUser(req.session.user_id)
