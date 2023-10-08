@@ -24,7 +24,7 @@ app.post("/urls", (req, res) => {
   if (!user) {
     const templateVars = { user: users[req.session.user_id], message: "You cannot shorten URL's because you are not logged in", errorCode: "401" };
     return res.status(401).render("urls_error", templateVars);
-  } else if (!longURL) {
+  } else if (!req.body.longURL) {
     const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
     return res.status(400).render("urls_error", templateVars);
   } else {
@@ -45,7 +45,7 @@ app.post("/urls/:id", (req, res) => {
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
     return res.status(401).render("urls_error", templateVars);
-  } else if (!longURL) {
+  } else if (!req.body.longURL) {
     const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
     return res.status(400).render("urls_error", templateVars);
   } else {
