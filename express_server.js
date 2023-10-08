@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 //POST /urls endpoint - Generates new short URL ID - Displays short URL ID and user inputted long URL
 app.post("/urls", (req, res) => {
   const user = users[req.session.user_id];
-  if (user === undefined) {
+  if (!user) {
     const templateVars = { user: users[req.session.user_id], message: "You cannot shorten URL's because you are not logged in", errorCode: "401" };
     res.status(401).render("urls_error", templateVars);
   } else {
@@ -175,7 +175,7 @@ app.get("/register", (req, res) => {
 //POST /register endpoint - if Email doesn't exist in users database and password is entered, creates a new user in the users database
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
-  if (email === "" || password === "") {
+  if (!email || !password) {
     const templateVars = { user: users[req.session.user_id], message: `Error 400: ${(email === '') ? 'Email' : 'Password'} was empty`, errorCode: "400" };
     res.status(400).render("urls_error", templateVars);
   } else if (getUserByEmail(email, users) !== undefined) {
