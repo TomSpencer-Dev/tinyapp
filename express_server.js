@@ -23,14 +23,14 @@ app.post("/urls", (req, res) => {
   const user = users[req.session.user_id];
   if (!user) {
     const templateVars = { user: users[req.session.user_id], message: "You cannot shorten URL's because you are not logged in", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else if (!longURL) {
     const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
-    res.status(400).render("urls_error", templateVars);
+    return res.status(400).render("urls_error", templateVars);
   } else {
     let shortURLID = generateRandomString();
     urlDatabase[shortURLID] = { longURL: req.body.longURL, userID: user.id };
-    res.redirect("/urls/" + shortURLID);
+    return res.redirect("/urls/" + shortURLID);
   }
 });
 
@@ -38,19 +38,19 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
-    res.status(404).render("urls_error", templateVars);
+    return res.status(404).render("urls_error", templateVars);
   } else if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else if (!longURL) {
     const templateVars = { user: users[req.session.user_id], message: "No long URL entered", errorCode: "400" };
-    res.status(400).render("urls_error", templateVars);
+    return res.status(400).render("urls_error", templateVars);
   } else {
     urlDatabase[req.params.id].longURL = req.body.longURL;
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
 });
 
@@ -58,16 +58,16 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
-    res.status(404).render("urls_error", templateVars);
+    return res.status(404).render("urls_error", templateVars);
   } else if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else {
     delete urlDatabase[req.params.id];
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
 });
 
@@ -80,9 +80,9 @@ app.get("/urls", (req, res) => {
   };
   if (!templateVars.user) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else {
-    res.render("urls_index", templateVars);
+    return res.render("urls_index", templateVars);
   }
 });
 
@@ -90,9 +90,9 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (!templateVars.user) {
-    res.redirect("/login");
+    return res.redirect("/login");
   } else {
-    res.render("urls_new", templateVars);
+    return res.render("urls_new", templateVars);
   }
 });
 
@@ -100,17 +100,17 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     const templateVars = { user: users[req.session.user_id], message: "Short url does not exist", errorCode: "404" };
-    res.status(404).render("urls_error", templateVars);
+    return res.status(404).render("urls_error", templateVars);
   }
   if (!req.session.user_id) {
     const templateVars = { user: users[req.session.user_id], message: "Login or register to access urls", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     const templateVars = { user: users[req.session.user_id], message: "This urls does not belong to you", errorCode: "401" };
-    res.status(401).render("urls_error", templateVars);
+    return res.status(401).render("urls_error", templateVars);
   } else {
     const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.session.user_id] };
-    res.render("urls_show", templateVars);
+    return res.render("urls_show", templateVars);
   }
 });
 
@@ -119,18 +119,18 @@ app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if (!longURL) {
     const templateVars = { user: users[req.session.user_id], message: "That short URL id does not exist", errorCode: "404" };
-    res.status(404).render("urls_error", templateVars);
+    return res.status(404).render("urls_error", templateVars);
   } else {
-    res.redirect(longURL);
+    return res.redirect(longURL);
   }
 });
 
 //GET / endpoint - redirects to /urls if logged in - redirects to /login if not logged in
 app.get("/", (req, res) => {
   if (req.session.user_id) {
-    res.redirect("/urls");
+    return res.redirect("/urls");
   } else {
-    res.redirect("/login");
+    return res.redirect("/login");
   }
 });
 
@@ -147,13 +147,13 @@ app.post("/login", (req, res) => {
   // If a user with that e-mail cannot be found, return a response with a 403 status code.
   if (!userInfo) {
     const templateVars = { user: users[req.session.user_id], message: "Email not found", errorCode: "403" };
-    res.status(403).render("urls_error", templateVars);
+    return res.status(403).render("urls_error", templateVars);
   } else if (!bcrypt.compareSync(password, userInfo.password)) {
     const templateVars = { user: users[req.session.user_id], message: "Password does not match", errorCode: "403" };
-    res.status(403).render("urls_error", templateVars);
+    return res.status(403).render("urls_error", templateVars);
   } else {
     req.session.user_id = userInfo.id;
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
 });
 
@@ -179,10 +179,10 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     const templateVars = { user: users[req.session.user_id], message: `Error 400: ${(!email) ? 'Email' : 'Password'} was empty`, errorCode: "400" };
-    res.status(400).render("urls_error", templateVars);
+    return res.status(400).render("urls_error", templateVars);
   } else if (getUserByEmail(email, users)) {
     const templateVars = { user: users[req.session.user_id], message: "Email already exists as a user", errorCode: "400" };
-    res.status(400).render("urls_error", templateVars);
+    return res.status(400).render("urls_error", templateVars);
   } else {
     const id = generateRandomString();
     const user = {
@@ -192,7 +192,7 @@ app.post("/register", (req, res) => {
     };
     users[id] = user;
     req.session.user_id = id;
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
 });
 
@@ -200,9 +200,9 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (templateVars.user) {
-    res.redirect("/urls");
+    return res.redirect("/urls");
   } else {
-    res.render("urls_login", templateVars);
+    return res.render("urls_login", templateVars);
   }
 });
 
