@@ -1,16 +1,16 @@
 //Module to contain databases
 
-//Database of URLs
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "userRandomID",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "userRandomID",
-  },
-};
+  //Database of URLs
+  const urlDatabase = {
+    b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "userRandomID",
+    },
+    i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "userRandomID",
+    },
+  }
 
 //Database of users
 const users = {
@@ -27,4 +27,4 @@ const users = {
 };
 
 //Export objects
-module.exports = {users, urlDatabase};
+module.exports = { users, urlDatabase };

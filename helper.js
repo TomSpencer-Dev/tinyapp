@@ -1,5 +1,8 @@
 //Module to contain helper functions
 
+const { users, urlDatabase  } = require('./database.js'); //Load urlDatabase and users databases
+
+
 //Function to check if user's email exists in the users database
 const getUserByEmail = function(email, database) {
   for (let user in database) {
