@@ -22,5 +22,17 @@ const urlsForUser = function(id) {
     return tempDB;
   };
 
+//Generate a Random Short URL ID
+const generateRandomString = function() {
+  let shortURL = "";
+
+  const charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (let i = 0; i < 6; i++) {
+    shortURL += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return shortURL;
+};
+
 //Export function
-module.exports = {getUserByEmail, urlsForUser};
+module.exports = {getUserByEmail, urlsForUser, generateRandomString};

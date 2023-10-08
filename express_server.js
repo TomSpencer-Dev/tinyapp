@@ -2,7 +2,7 @@
 
 const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
 const express = require('express');                //Load express
-const { getUserByEmail, urlsForUser } = require('./helper.js'); //Load getUserByEmail function
+const { getUserByEmail, urlsForUser, generateRandomString } = require('./helper.js'); //Load getUserByEmail, urlsForUser, and generateRandomString functions
 const app = express();                             //Create app variable that utilizes the express function
 const PORT = 8080;                                 // default port 8080
 const bcrypt = require("bcryptjs");                //Load bcrypt to
@@ -41,21 +41,7 @@ const users = {
   },
 };
 
-
 app.use(express.urlencoded({ extended: true }));
-
-//Generate a Random Short URL ID
-const generateRandomString = function() {
-  let shortURL = "";
-
-  const charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (let i = 0; i < 6; i++) {
-    shortURL += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return shortURL;
-};
-
 
 //POST /urls endpoint - Generates new short URL ID - Displays short URL ID and user inputted long URL
 app.post("/urls", (req, res) => {
