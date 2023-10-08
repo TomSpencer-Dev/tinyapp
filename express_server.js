@@ -3,8 +3,6 @@
 const cookieSession = require('cookie-session');   //Load cookie-session to store cookies
 const express = require('express');                //Load express
 const { getUserByEmail } = require('./helper.js'); //Load getUserByEmail function
-const { get } = require('request');                //Load request
-const { OPEN_READWRITE } = require('sqlite3');
 const app = express();                             //Create app variable that utilizes the express function
 const PORT = 8080;                                 // default port 8080
 const bcrypt = require("bcryptjs");                //Load bcrypt to
